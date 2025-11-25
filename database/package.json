@@ -1,0 +1,10 @@
+{
+  "name": "sacola-ideias-database",
+  "version": "1.0.0",
+  "description": "Scripts e utilitários para o banco de dados",
+  "scripts": {
+    "setup": "psql -U postgres -d sacola_ideias -f schema.sql",
+    "reset": "psql -U postgres -d sacola_ideias -c \"DROP TABLE IF EXISTS ideias CASCADE;\" && npm run setup"
+  }
+}
+

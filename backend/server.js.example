@@ -1,0 +1,211 @@
+// Exemplo de servidor backend Node.js/Express para conectar com PostgreSQL
+// Renomeie este arquivo para server.js e instale as dependências
+
+import express from 'express'
+import cors from 'cors'
+import pkg from 'pg'
+const { Pool } = pkg
+
+const app = express()
+const PORT = process.env.PORT || 3001
+
+// Configuração do banco de dados
+const pool = new Pool({
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'sacola_ideias',
+  password: process.env.DB_PASSWORD || 'sua_senha',
+  port: process.env.DB_PORT || 5432,
+})
+
+app.use(cors())
+app.use(express.json())
+
+// Testar conexão
+pool.on('connect', () => {
+  console.log('✅ Conectado ao PostgreSQL')
+})
+
+// Buscar todas as ideias
+app.get('/api/ideias', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM ideias ORDER BY data DESC')
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Erro ao buscar ideias:', error)
+    res.status(500).json({ error: 'Erro ao buscar ideias' })
+  }
+})
+
+// Buscar ideia por ID
+app.get('/api/ideias/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await pool.query('SELECT * FROM ideias WHERE id = $1', [id])
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ideia não encontrada' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao buscar ideia:', error)
+    res.status(500).json({ error: 'Erro ao buscar ideia' })
+  }
+})
+
+// Criar nova ideia
+app.post('/api/ideias', async (req, res) => {
+  try {
+    const { titulo, tag, ideia, embedding } = req.body
+    
+    const query = embedding
+      ? 'INSERT INTO ideias (titulo, tag, ideia, embedding) VALUES ($1, $2, $3, $4::vector) RETURNING *'
+      : 'INSERT INTO ideias (titulo, tag, ideia) VALUES ($1, $2, $3) RETURNING *'
+    
+    const values = embedding
+      ? [titulo, tag, ideia, `[${embedding.join(',')}]`]
+      : [titulo, tag, ideia]
+    
+    const result = await pool.query(query, values)
+    res.status(201).json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao criar ideia:', error)
+    res.status(500).json({ error: 'Erro ao criar ideia' })
+  }
+})
+
+// Atualizar ideia
+app.put('/api/ideias/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { titulo, tag, ideia, embedding } = req.body
+    
+    let query, values
+    if (embedding) {
+      query = 'UPDATE ideias SET titulo = $1, tag = $2, ideia = $3, embedding = $4::vector WHERE id = $5 RETURNING *'
+      values = [titulo, tag, ideia, `[${embedding.join(',')}]`, id]
+    } else {
+      query = 'UPDATE ideias SET titulo = $1, tag = $2, ideia = $3 WHERE id = $4 RETURNING *'
+      values = [titulo, tag, ideia, id]
+    }
+    
+    const result = await pool.query(query, values)
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ideia não encontrada' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao atualizar ideia:', error)
+    res.status(500).json({ error: 'Erro ao atualizar ideia' })
+  }
+})
+
+// Deletar ideia
+app.delete('/api/ideias/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await pool.query('DELETE FROM ideias WHERE id = $1 RETURNING *', [id])
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ideia não encontrada' })
+    }
+    
+    res.json({ success: true, message: 'Ideia deletada com sucesso' })
+  } catch (error) {
+    console.error('Erro ao deletar ideia:', error)
+    res.status(500).json({ error: 'Erro ao deletar ideia' })
+  }
+})
+
+// Buscar por similaridade
+app.post('/api/ideias/buscar', async (req, res) => {
+  try {
+    const { termo, embedding } = req.body
+    
+    if (!embedding || !Array.isArray(embedding)) {
+      return res.status(400).json({ error: 'Embedding é obrigatório' })
+    }
+    
+    const embeddingStr = `[${embedding.join(',')}]`
+    
+    // Usar a função SQL criada no schema
+    const query = `
+      SELECT 
+        id,
+        titulo,
+        tag,
+        ideia,
+        data,
+        1 - (embedding <=> $1::vector) AS similarity
+      FROM ideias
+      WHERE embedding IS NOT NULL
+      AND (1 - (embedding <=> $1::vector)) >= 0.3
+      ORDER BY embedding <=> $1::vector
+      LIMIT 20
+    `
+    
+    const result = await pool.query(query, [embeddingStr])
+    
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Erro na busca por similaridade:', error)
+    res.status(500).json({ error: 'Erro na busca por similaridade' })
+  }
+})
+
+// Salvar ideia com embedding
+app.post('/api/ideias/com-embedding', async (req, res) => {
+  try {
+    const { ideia, embedding } = req.body
+    const { titulo, tag, ideia: conteudo } = ideia
+    
+    const embeddingStr = `[${embedding.join(',')}]`
+    
+    const query = `
+      INSERT INTO ideias (titulo, tag, ideia, embedding)
+      VALUES ($1, $2, $3, $4::vector)
+      RETURNING *
+    `
+    
+    const result = await pool.query(query, [titulo, tag, conteudo, embeddingStr])
+    res.status(201).json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao salvar ideia com embedding:', error)
+    res.status(500).json({ error: 'Erro ao salvar ideia com embedding' })
+  }
+})
+
+// Atualizar embedding de uma ideia
+app.put('/api/ideias/:id/embedding', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { embedding } = req.body
+    
+    if (!Array.isArray(embedding)) {
+      return res.status(400).json({ error: 'Embedding deve ser um array' })
+    }
+    
+    const embeddingStr = `[${embedding.join(',')}]`
+    
+    const query = 'UPDATE ideias SET embedding = $1::vector WHERE id = $2 RETURNING *'
+    const result = await pool.query(query, [embeddingStr, id])
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ideia não encontrada' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao atualizar embedding:', error)
+    res.status(500).json({ error: 'Erro ao atualizar embedding' })
+  }
+})
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`)
+  console.log(`📡 API disponível em http://localhost:${PORT}/api`)
+})
+
