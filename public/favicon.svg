@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bagGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fundo circular suave -->
+  <circle cx="50" cy="50" r="48" fill="#ffffff" opacity="0.1"/>
+  
+  <!-- Sacola -->
+  <path d="M 30 25 L 30 70 Q 30 75 35 75 L 65 75 Q 70 75 70 70 L 70 25 Z" 
+        fill="url(#bagGradient)" 
+        stroke="#4f46e5" 
+        stroke-width="2"/>
+  
+  <!-- Alças da sacola -->
+  <path d="M 35 25 Q 35 15 45 15 Q 55 15 55 25" 
+        fill="none" 
+        stroke="#4f46e5" 
+        stroke-width="3" 
+        stroke-linecap="round"/>
+  <path d="M 45 25 Q 45 15 55 15 Q 65 15 65 25" 
+        fill="none" 
+        stroke="#4f46e5" 
+        stroke-width="3" 
+        stroke-linecap="round"/>
+  
+  <!-- Lâmpada (ideia) saindo da sacola -->
+  <circle cx="50" cy="40" r="8" 
+          fill="url(#lightGradient)" 
+          opacity="0.9"/>
+  <circle cx="50" cy="40" r="5" 
+          fill="#ffffff" 
+          opacity="0.6"/>
+  
+  <!-- Raios de luz -->
+  <line x1="40" y1="35" x2="38" y2="32" 
+        stroke="#fbbf24" 
+        stroke-width="2" 
+        stroke-linecap="round" 
+        opacity="0.8"/>
+  <line x1="60" y1="35" x2="62" y2="32" 
+        stroke="#fbbf24" 
+        stroke-width="2" 
+        stroke-linecap="round" 
+        opacity="0.8"/>
+  <line x1="50" y1="30" x2="50" y2="27" 
+        stroke="#fbbf24" 
+        stroke-width="2" 
+        stroke-linecap="round" 
+        opacity="0.8"/>
+  
+  <!-- Base da lâmpada -->
+  <rect x="47" y="48" width="6" height="4" 
+        fill="#f59e0b" 
+        rx="1"/>
+  
+  <!-- Pequenos detalhes decorativos -->
+  <circle cx="42" cy="55" r="2" fill="#e0e7ff" opacity="0.7"/>
+  <circle cx="58" cy="60" r="2" fill="#e0e7ff" opacity="0.7"/>
+</svg>
