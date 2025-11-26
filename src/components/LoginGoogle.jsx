@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8002/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://143.198.133.156:8002/api'
 
 function LoginGoogle() {
   const { t } = useTranslation()

@@ -924,7 +924,7 @@ def login_google_redirect():
         )
 
     # URL de autorização do Google
-    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8002/api/auth/google/callback")
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://143.198.133.156:8002/api/auth/google/callback")
     scope = "openid email profile"
 
     # Codificar redirect_uri para URL (usar urlencode para query parameters)
@@ -1063,7 +1063,7 @@ async def google_callback_get(code: str = Query(...), error: Optional[str] = Que
 
     try:
         # Obter redirect_uri do .env
-        redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8002/api/auth/google/callback")
+        redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://143.198.133.156:8002/api/auth/google/callback")
 
         # Obter informações do usuário do Google
         google_info = await obter_info_google_por_code(code, redirect_uri)
@@ -1164,7 +1164,7 @@ async def google_callback_get(code: str = Query(...), error: Optional[str] = Que
 @app.get("/api/auth/google/debug")
 def debug_google_oauth():
     """Endpoint de debug para verificar configuração do Google OAuth"""
-    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8002/api/auth/google/callback")
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://143.198.133.156:8002/api/auth/google/callback")
     from urllib.parse import quote
     redirect_uri_encoded = quote(redirect_uri, safe='')
 

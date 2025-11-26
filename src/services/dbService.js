@@ -4,7 +4,7 @@
 // URL da API - verifica em ordem: window.API_URL (Hostgator), env var, ou localhost
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
-  : (import.meta.env.VITE_API_URL || 'http://localhost:8002/api')
+  : (import.meta.env.VITE_API_URL || 'http://143.198.133.156:8002/api')
 
 // Função auxiliar para fazer requisições (inclui token de autenticação)
 async function fetchAPI(endpoint, options = {}) {
